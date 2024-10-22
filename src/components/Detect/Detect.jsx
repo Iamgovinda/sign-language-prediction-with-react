@@ -229,7 +229,7 @@ const Detect = () => {
   return (
     <>
       <div className="signlang_detection-container">
-        {true ? (
+        {accessToken ? (
           <>
             <div style={{ position: "relative" }}>
               <Webcam
