@@ -10,7 +10,7 @@ const Footer = () => {
         <img src={logo} alt="signlang_logo" />
       </div>
 
-      <div className="signlang__footer-copyright">
+      {/* <div className="signlang__footer-copyright">
         <h3>
           &#169; &nbsp;2023
           &nbsp;&nbsp;
@@ -18,7 +18,7 @@ const Footer = () => {
           &nbsp;&nbsp;
           All rights reserved.
         </h3>
-      </div>
+      </div> */}
   </div>
   )
 }

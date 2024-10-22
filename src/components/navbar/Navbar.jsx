@@ -58,11 +58,11 @@ const Navbar = ({ notifyMsg }) => {
             <Link to="/guide">Guide</Link>
           </p> */}
 
-          {accessToken && (
+          {/* {accessToken && (
             <p>
               <Link to="/dashboard">Dashboard</Link>
             </p>
-          )}
+          )} */}
         </div>
 
         <div className="signlang_auth-data">
