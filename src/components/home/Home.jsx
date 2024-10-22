@@ -5,11 +5,11 @@ const Home = () => {
     return (
         <>
             <Header/>
-            <WhatComp/>
-            <Features/>
+            {/* <WhatComp/> */}
+            {/* <Features/> */}
             <Working/>
-            <CTA/>
-            <Testimonials/>
+            {/* <CTA/> */}
+            {/* <Testimonials/> */}
         </>
     )
 }
