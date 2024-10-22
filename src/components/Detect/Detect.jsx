@@ -129,7 +129,7 @@ const Detect = () => {
   }, [predictWebcam]);
 
   const enableCam = useCallback(() => {
-    console.log("here")
+    console.log("here");
     if (!gestureRecognizer) {
       alert("Please wait for gestureRecognizer to load");
       return;
@@ -268,15 +268,13 @@ const Detect = () => {
               </div>
             </div> */}
           </>
-        ) : 
-        (
+        ) : (
           <div className="signlang_detection_notLoggedIn">
-
-             <h1 className="gradient__text">Please Login !</h1>
-             <img src={DisplayImg} alt="diplay-img"/>
-             <p>
-              We Save Your Detection Data to show your progress and learning in dashboard, So please Login to Test this Detection Feature.
-             </p>
+            <h1 className="gradient__text">Please Login !</h1>
+            <p>
+              Login is required to detect sign language and view your progress
+              on the dashboard.
+            </p>
           </div>
         )}
       </div>
