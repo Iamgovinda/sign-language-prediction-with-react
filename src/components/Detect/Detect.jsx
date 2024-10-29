@@ -17,6 +17,7 @@ import { addSignData } from "../../redux/actions/signdataaction";
 import ProgressBar from "./ProgressBar/ProgressBar";
 
 import DisplayImg from "../../assests/displayGif.gif";
+import { saveImageToPublic } from "../../utils";
 
 let startTime = "";
 
@@ -53,12 +54,12 @@ const Detect = () => {
     return () => clearInterval(intervalId);
   }, [webcamRunning]);
 
-  if (
-    process.env.NODE_ENV === "development" ||
-    process.env.NODE_ENV === "production"
-  ) {
-    console.log = function () {};
-  }
+  // if (
+  //   process.env.NODE_ENV === "development" ||
+  //   process.env.NODE_ENV === "production"
+  // ) {
+  //   console.log = function () {};
+  // }
 
   const predictWebcam = useCallback(() => {
     if (runningMode === "IMAGE") {
@@ -113,6 +114,29 @@ const Detect = () => {
 
       setGestureOutput(results.gestures[0][0].categoryName);
       setProgress(Math.round(parseFloat(results.gestures[0][0].score) * 100));
+
+      // Create an off-screen canvas
+      const offScreenCanvas = document.createElement("canvas");
+      offScreenCanvas.width = videoWidth;
+      offScreenCanvas.height = videoHeight;
+      const offScreenCtx = offScreenCanvas.getContext("2d");
+
+      // Draw the current video frame onto the off-screen canvas
+      offScreenCtx.drawImage(
+        webcamRef.current.video,
+        0,
+        0,
+        videoWidth,
+        videoHeight
+      );
+
+      // Convert the off-screen canvas image to a data URL in base64 format
+      const dataUrl = offScreenCanvas.toDataURL("image/png");
+
+      // Save the image to the public folder via API
+      if (results.gestures[0][0].categoryName) {
+        saveImageToPublic(dataUrl, results.gestures[0][0].categoryName);
+      }
     } else {
       setGestureOutput("");
       setProgress("");
