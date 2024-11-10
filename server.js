@@ -2,11 +2,11 @@ const express = require('express');
 const bodyParser = require('body-parser');
 const fs = require('fs');
 const path = require('path');
-const cors = require('cors'); // Import cors
+const cors = require('cors'); 
 
 const app = express();
-app.use(cors()); // Enable CORS for all requests
-app.use(bodyParser.json({ limit: '10mb' })); // Increase limit if needed
+app.use(cors()); 
+app.use(bodyParser.json({ limit: '10mb' })); 
 
 app.post('/api/save-image', (req, res) => {
   const { image, label } = req.body;

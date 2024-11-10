@@ -18,6 +18,7 @@ import ProgressBar from "./ProgressBar/ProgressBar";
 
 import DisplayImg from "../../assests/displayGif.gif";
 import { saveImageToPublic } from "../../utils";
+import { debounce } from "lodash";
 
 let startTime = "";
 
@@ -61,91 +62,86 @@ const Detect = () => {
   //   console.log = function () {};
   // }
 
-  const predictWebcam = useCallback(() => {
-    if (runningMode === "IMAGE") {
-      setRunningMode("VIDEO");
-      gestureRecognizer.setOptions({ runningMode: "VIDEO" });
+  // Define a debounced version of saveImageToPublic
+const debouncedSaveImageToPublic = useRef(debounce((dataUrl, categoryName) => {
+  // Call the original saveImageToPublic function
+  saveImageToPublic(dataUrl, categoryName);
+}, 500)); // Set debounce delay to 1000ms (1 second)
+
+const predictWebcam = useCallback(() => {
+  if (runningMode === "IMAGE") {
+    setRunningMode("VIDEO");
+    gestureRecognizer.setOptions({ runningMode: "VIDEO" });
+  }
+
+  let nowInMs = Date.now();
+  const results = gestureRecognizer.recognizeForVideo(webcamRef.current.video, nowInMs);
+
+  const canvasCtx = canvasRef.current.getContext("2d");
+  canvasCtx.save();
+  canvasCtx.clearRect(0, 0, canvasRef.current.width, canvasRef.current.height);
+
+  const videoWidth = webcamRef.current.video.videoWidth;
+  const videoHeight = webcamRef.current.video.videoHeight;
+
+  // Set video width and canvas dimensions
+  webcamRef.current.video.width = videoWidth;
+  webcamRef.current.video.height = videoHeight;
+  canvasRef.current.width = videoWidth;
+  canvasRef.current.height = videoHeight;
+
+  // Draw the results on the canvas, if any.
+  if (results.landmarks) {
+    for (const landmarks of results.landmarks) {
+      drawConnectors(canvasCtx, landmarks, HAND_CONNECTIONS, {
+        color: "#00FF00",
+        lineWidth: 5,
+      });
+      drawLandmarks(canvasCtx, landmarks, { color: "#FF0000", lineWidth: 2 });
     }
+  }
 
-    let nowInMs = Date.now();
-    const results = gestureRecognizer.recognizeForVideo(
-      webcamRef.current.video,
-      nowInMs
-    );
+  if (results.gestures.length > 0) {
+    setDetectedData((prevData) => [
+      ...prevData,
+      {
+        SignDetected: results.gestures[0][0].categoryName,
+      },
+    ]);
 
-    const canvasCtx = canvasRef.current.getContext("2d");
-    canvasCtx.save();
-    canvasCtx.clearRect(
-      0,
-      0,
-      canvasRef.current.width,
-      canvasRef.current.height
-    );
+    setGestureOutput(results.gestures[0][0].categoryName);
+    setProgress(Math.round(parseFloat(results.gestures[0][0].score) * 100));
 
-    const videoWidth = webcamRef.current.video.videoWidth;
-    const videoHeight = webcamRef.current.video.videoHeight;
+    // Create an off-screen canvas
+    const offScreenCanvas = document.createElement("canvas");
+    offScreenCanvas.width = videoWidth;
+    offScreenCanvas.height = videoHeight;
+    const offScreenCtx = offScreenCanvas.getContext("2d");
 
-    // Set video width
-    webcamRef.current.video.width = videoWidth;
-    webcamRef.current.video.height = videoHeight;
+    // Draw the current video frame onto the off-screen canvas
+    offScreenCtx.drawImage(webcamRef.current.video, 0, 0, videoWidth, videoHeight);
 
-    // Set canvas height and width
-    canvasRef.current.width = videoWidth;
-    canvasRef.current.height = videoHeight;
+    // Convert the off-screen canvas image to a data URL in base64 format
+    const dataUrl = offScreenCanvas.toDataURL("image/png");
 
-    // Draw the results on the canvas, if any.
-    if (results.landmarks) {
-      for (const landmarks of results.landmarks) {
-        drawConnectors(canvasCtx, landmarks, HAND_CONNECTIONS, {
-          color: "#00FF00",
-          lineWidth: 5,
-        });
-
-        drawLandmarks(canvasCtx, landmarks, { color: "#FF0000", lineWidth: 2 });
-      }
+    // Save the image to the public folder via API (debounced)
+    if (
+      results.gestures[0][0].categoryName &&
+      Math.round(parseFloat(results.gestures[0][0].score) * 100) > 90
+    ) {
+      // Use the debounced function to call saveImageToPublic
+      debouncedSaveImageToPublic.current(dataUrl, results.gestures[0][0].categoryName);
     }
-    if (results.gestures.length > 0) {
-      setDetectedData((prevData) => [
-        ...prevData,
-        {
-          SignDetected: results.gestures[0][0].categoryName,
-        },
-      ]);
+  } else {
+    setGestureOutput("");
+    setProgress("");
+  }
 
-      setGestureOutput(results.gestures[0][0].categoryName);
-      setProgress(Math.round(parseFloat(results.gestures[0][0].score) * 100));
+  if (webcamRunning === true) {
+    requestRef.current = requestAnimationFrame(predictWebcam);
+  }
+}, [webcamRunning, runningMode, gestureRecognizer, setGestureOutput]);
 
-      // Create an off-screen canvas
-      const offScreenCanvas = document.createElement("canvas");
-      offScreenCanvas.width = videoWidth;
-      offScreenCanvas.height = videoHeight;
-      const offScreenCtx = offScreenCanvas.getContext("2d");
-
-      // Draw the current video frame onto the off-screen canvas
-      offScreenCtx.drawImage(
-        webcamRef.current.video,
-        0,
-        0,
-        videoWidth,
-        videoHeight
-      );
-
-      // Convert the off-screen canvas image to a data URL in base64 format
-      const dataUrl = offScreenCanvas.toDataURL("image/png");
-
-      // Save the image to the public folder via API
-      if (results.gestures[0][0].categoryName) {
-        saveImageToPublic(dataUrl, results.gestures[0][0].categoryName);
-      }
-    } else {
-      setGestureOutput("");
-      setProgress("");
-    }
-
-    if (webcamRunning === true) {
-      requestRef.current = requestAnimationFrame(predictWebcam);
-    }
-  }, [webcamRunning, runningMode, gestureRecognizer, setGestureOutput]);
 
   const animate = useCallback(() => {
     requestRef.current = requestAnimationFrame(animate);
