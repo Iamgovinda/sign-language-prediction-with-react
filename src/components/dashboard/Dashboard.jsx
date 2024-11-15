@@ -115,10 +115,6 @@ const Dashboard = () => {
               </div>
 
               <div className="signlang_quotes-box">
-                <h2 className="gradient__text">Quote of the Day</h2>
-                <div>
-                  <blockquote>{quote.quote}</blockquote>
-                </div>
               </div>
             </div>
           </>

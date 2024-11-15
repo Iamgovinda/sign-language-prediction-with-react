@@ -4,9 +4,9 @@ import 'firebase/compat/firestore';
 
 const firebaseConfig = {
   apiKey: process.env.REACT_APP_FIREBASE_API_KEY,
-  authDomain: "sign-language-prediction-1d77a.firebaseapp.com",
-  projectId: "sign-language-prediction-1d77a",
-  storageBucket: "sign-language-prediction-1d77a.appspot.com",
+  authDomain: "signlanguageprediction.firebaseapp.com",
+  projectId: "signlanguageprediction",
+  // storageBucket: "sign-language-prediction-1d77a.appspot.com",
   messagingSenderId: process.env.REACT_APP_FIREBASE_MESSAGE_ID,
   appId: process.env.REACT_APP_FIREBASE_APP_ID,
 };
